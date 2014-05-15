@@ -1,9 +1,9 @@
 (function(window){
 
-var PENDING = 'pending', SUCCEED = 'fulfilled', FAILURE = 'rejected';
+var PENDING = void 0, FULFILLED = 1, REJECTED = 2;
 
-var isFunction = function(arg){
-	return 'function' === typeof arg;
+var isFunction = function(obj){
+	return 'function' === typeof obj;
 }
 
 var isPromise = function(obj){
@@ -12,14 +12,13 @@ var isPromise = function(obj){
 
 var fireQueue = function(val){
     var fn,
-    	st = this._status === SUCCEED,
+    	st = this._status === FULFILLED,
     	queue = this[st ? '_resolves' : '_rejects'];
     
     while(fn = queue.shift()) {
         val = fn.call(this, val) || val;
     }
     this[st ? '_value' : '_reason'] = val;
-    return this;
 }
 
 var transition = function(status,val){
@@ -33,9 +32,11 @@ var transition = function(status,val){
 }
 
 var Promise = function(resolver){
-	// 无new实例构造
+	if (!isFunction(resolver)) {
+	    throw new TypeError('You must pass a resolver function as the first argument to the promise constructor');
+	}
 	if(!(this instanceof Promise)) return new Promise(resolver);
-	// 参数初始化
+
 	var that = this;
 	that._status = PENDING;
 	//这里目前可以不用数组，后续改进
@@ -47,14 +48,12 @@ var Promise = function(resolver){
 	// promise内部resolve或reject调用时执行
 	// then时push进_resolves或_rejects里的回调
 	var resolve = function(value){
-		transition.apply(that,[SUCCEED].concat(value));
+		transition.apply(that,[FULFILLED].concat(value));
 	}
 	var reject = function(reason){
-		transition.apply(that,[FAILURE].concat(reason));
+		transition.apply(that,[REJECTED].concat(reason));
 	}
-	if(isFunction(resolver)){
-		resolver(resolve,reject);
-	}
+	resolver(resolve,reject);
 }
 
 Promise.prototype.then = function(onFulfilled,onRejected){
@@ -88,9 +87,9 @@ Promise.prototype.then = function(onFulfilled,onRejected){
 		if(that._status === PENDING){
        		that._resolves.push(callback);
        		that._rejects.push(errback);
-       	}else if(that._status === SUCCEED){
+       	}else if(that._status === FULFILLED){
        		callback(that._value);
-       	}else if(that._status === FAILURE){
+       	}else if(that._status === REJECTED){
        		errback(that._reason);
        	}
 	});

@@ -26,8 +26,13 @@ getData100().then(getData200,function(err){
 	console.log(err)
 }).then(function(data){
 	console.log(data)
+	return 'ygm';
 },function(err){
 	console.log(err);
+}).then(function(data){
+	console.log(data)
+},function(){
+
 });
 
 </script>

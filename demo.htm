@@ -22,18 +22,23 @@ var getData200 = function(){
 	});
 }
 
-getData100().then(getData200,function(err){
-	console.log(err)
-}).then(function(data){
-	console.log(data)
-	return 'ygm';
-},function(err){
-	console.log(err);
-}).then(function(data){
-	console.log(data)
-},function(){
 
+Promise.all([getData100(),getData200()]).then(function(value){
+	console.log(value)
 });
+
+// getData100().then(getData200,function(err){
+// 	console.log(err)
+// }).then(function(data){
+// 	console.log(data)
+// 	return 'ygm';
+// },function(err){
+// 	console.log(err);
+// }).then(function(data){
+// 	console.log(data)
+// },function(){
+
+// });
 
 </script>
 </body>

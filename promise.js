@@ -1,9 +1,13 @@
-(function(window){
+(function(window,undefined){
 
-var PENDING = void 0, FULFILLED = 1, REJECTED = 2;
+var PENDING = undefined, FULFILLED = 1, REJECTED = 2;
 
 var isFunction = function(obj){
 	return 'function' === typeof obj;
+}
+
+var isArray = function(obj) {
+  	return Object.prototype.toString.call(obj) === "[object Array]";
 }
 
 var isPromise = function(obj){
@@ -48,10 +52,10 @@ var Promise = function(resolver){
 	// promise内部resolve或reject调用时执行
 	// then时push进_resolves或_rejects里的回调
 	var resolve = function(value){
-		transition.apply(that,[FULFILLED].concat(value));
+		transition.apply(that,[FULFILLED].concat([value]));
 	}
 	var reject = function(reason){
-		transition.apply(that,[REJECTED].concat(reason));
+		transition.apply(that,[REJECTED].concat([reason]));
 	}
 	resolver(resolve,reject);
 }
@@ -95,6 +99,10 @@ Promise.prototype.then = function(onFulfilled,onRejected){
 	});
 }
 
+Promise.prototype.catch = function(onRejected){
+	return this.then(undefined, onRejected);
+}
+
 Promise.resolve = function(arg){
 	return Promise(function(resolve,reject){
 		resolve(arg)
@@ -105,6 +113,34 @@ Promise.reject = function(arg){
 	return Promise(function(resolve,reject){
 		reject(arg)
 	})
+}
+
+Promise.all = function(promises){
+	if (!isArray(promises)) {
+    	throw new TypeError('You must pass an array to all.');
+  	}
+  	return Promise(function(resolve,reject){
+  		var i = 0,
+  			result = [],
+  			len = promises.length;
+
+  		function resolver(index) {
+	      return function(value) {
+	        resolveAll(index, value);
+	      };
+	    }
+
+	    function resolveAll(index,value){
+	    	result[index] = value;
+	    	if(index == len - 1){
+	    		resolve(result);
+	    	}
+	    }
+
+  		for (; i < len; i++) {
+  			promises[i].then(resolver(i));
+  		}
+  	});
 }
 
 window.Promise = Promise;

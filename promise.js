@@ -11,7 +11,7 @@ var isArray = function(obj) {
 }
 
 var isPromise = function(obj){
-  	return obj != null && typeof obj['then'] == 'function';
+  	return obj && typeof obj['then'] == 'function';
 }
 
 var fireQueue = function(val){

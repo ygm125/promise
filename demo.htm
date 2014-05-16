@@ -4,8 +4,11 @@
 	<title>demo</title>
 </head>
 <body>
+
 <script type="text/javascript" src="promise.js"></script>
+
 <script type="text/javascript">
+
 var getData100 = function(){
 	return Promise(function(resolve,reject){
 		setTimeout(function(){
@@ -22,23 +25,29 @@ var getData200 = function(){
 	});
 }
 
-
-Promise.all([getData100(),getData200()]).then(function(value){
-	console.log(value)
-});
-
-// getData100().then(getData200,function(err){
-// 	console.log(err)
-// }).then(function(data){
-// 	console.log(data)
-// 	return 'ygm';
-// },function(err){
-// 	console.log(err);
-// }).then(function(data){
-// 	console.log(data)
-// },function(){
-
+// Promise.all([getData100(),getData200()]).then(function(value){
+// 	console.log(value)
 // });
+
+// Promise.race([getData100(),getData200()]).then(function(value){
+// 	console.log(value)
+// }).catch(function(reason){
+// 	console.log(reason)
+// });
+
+getData100().then(function(data){
+	console.log(data);
+	return getData200();
+}).then(function(data){
+	console.log(data);
+	return data + data;
+},function(err){
+	console.log(err);
+}).then(function(data){
+	console.log(data)
+},function(err){
+	console.log(err);
+});
 
 </script>
 </body>

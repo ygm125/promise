@@ -43,7 +43,6 @@ var Promise = function(resolver){
 
 	var that = this;
 	that._status = PENDING;
-	//这里目前可以不用数组，后续改进
 	that._resolves = [];
 	that._rejects = [];
 	that._value;
@@ -62,7 +61,6 @@ var Promise = function(resolver){
 
 Promise.prototype.then = function(onFulfilled,onRejected){
 	var that = this;
-	// 返回promise供then链式调用
 	return Promise(function(resolve,reject){
 		// 被接受时触发的回调(即内部resolve)
 		// 如果onFulfilled返回的是promise，
@@ -130,6 +128,10 @@ Promise.all = function(promises){
 	      };
 	    }
 
+	    function rejecter(reason){
+	    	reject(reason);
+	    }
+
 	    function resolveAll(index,value){
 	    	result[index] = value;
 	    	if(index == len - 1){
@@ -138,7 +140,29 @@ Promise.all = function(promises){
 	    }
 
   		for (; i < len; i++) {
-  			promises[i].then(resolver(i));
+  			promises[i].then(resolver(i),rejecter);
+  		}
+  	});
+}
+
+Promise.race = function(promises){
+	if (!isArray(promises)) {
+    	throw new TypeError('You must pass an array to race.');
+  	}
+  	return Promise(function(resolve,reject){
+  		var i = 0,
+  			len = promises.length;
+
+  		function resolver(value) {
+  			resolve(value);
+	    }
+
+	    function rejecter(reason){
+	    	reject(reason);
+	    }
+
+  		for (; i < len; i++) {
+  			promises[i].then(resolver,rejecter);
   		}
   	});
 }

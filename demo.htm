@@ -9,6 +9,13 @@
 
 <script type="text/javascript">
 
+Promise.resolve('test').then(function(val){
+	console.log(val);
+	return val + val;
+}).then(function(val){
+	console.log(val);
+});
+
 var getData100 = function(){
 	return Promise(function(resolve,reject){
 		setTimeout(function(){

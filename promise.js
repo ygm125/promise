@@ -8,7 +8,7 @@ var isFunction = function(obj){
 var isArray = function(obj) {
   	return Object.prototype.toString.call(obj) === "[object Array]";
 }
-var isPromise = function(obj){
+var isThenable = function(obj){
   	return obj && typeof obj['then'] == 'function';
 }
 
@@ -51,6 +51,7 @@ var Promise = function(resolver){
 	var reject = function(reason){
 		transition.apply(promise,[REJECTED].concat([reason]));
 	}
+	
 	resolver(resolve,reject);
 }
 
@@ -60,7 +61,7 @@ Promise.prototype.then = function(onFulfilled,onRejected){
 	return Promise(function(resolve,reject){
 		function callback(value){
 	      var ret = isFunction(onFulfilled) && onFulfilled(value) || value;
-	      if(isPromise(ret)){
+	      if(isThenable(ret)){
 	        ret.then(function(value){
 	           resolve(value);
 	        },function(reason){
@@ -77,7 +78,7 @@ Promise.prototype.then = function(onFulfilled,onRejected){
 		if(promise._status === PENDING){
        		promise._resolves.push(callback);
        		promise._rejects.push(errback);
-       	}else if(promise._status === FULFILLED){
+       	}else if(promise._status === FULFILLED){ // 状态改变后的then操作，立刻执行
        		callback(promise._value);
        	}else if(promise._status === REJECTED){
        		errback(promise._reason);

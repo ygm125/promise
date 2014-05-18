@@ -5,67 +5,59 @@ var PENDING = undefined, FULFILLED = 1, REJECTED = 2;
 var isFunction = function(obj){
 	return 'function' === typeof obj;
 }
-
 var isArray = function(obj) {
   	return Object.prototype.toString.call(obj) === "[object Array]";
 }
-
 var isPromise = function(obj){
   	return obj && typeof obj['then'] == 'function';
 }
 
-var fireQueue = function(val){
-    var fn,
-    	st = this._status === FULFILLED,
-    	queue = this[st ? '_resolves' : '_rejects'];
-    
-    while(fn = queue.shift()) {
-        val = fn.call(this, val) || val;
-    }
-    this[st ? '_value' : '_reason'] = val;
-}
-
-var transition = function(status,val){
-	var that = this;
-	if(that._status !== PENDING) return;
+var transition = function(status,value){
+	var promise = this;
+	if(promise._status !== PENDING) return;
 	// 所以的执行都是异步调用，保证then是先执行的
 	setTimeout(function(){
-		that._status = status;
-		fireQueue.call(that,val);
+		promise._status = status;
+		fireQueue.call(promise,value);
 	});
+}
+var fireQueue = function(val){
+	var promise = this,
+    	fn,
+    	st = promise._status === FULFILLED,
+    	queue = promise[st ? '_resolves' : '_rejects'];
+    
+    while(fn = queue.shift()) {
+        val = fn.call(promise, val) || val;
+    }
+    promise[st ? '_value' : '_reason'] = val;
 }
 
 var Promise = function(resolver){
-	if (!isFunction(resolver)) {
+	if (!isFunction(resolver))
 	    throw new TypeError('You must pass a resolver function as the first argument to the promise constructor');
-	}
 	if(!(this instanceof Promise)) return new Promise(resolver);
 
-	var that = this;
-	that._status = PENDING;
-	that._resolves = [];
-	that._rejects = [];
-	that._value;
-	that._reason;
-	// 传入函数resolver里resolve与reject方法
-	// promise内部resolve或reject调用时执行
-	// then时push进_resolves或_rejects里的回调
+	var promise = this;
+	promise._value;
+	promise._reason;
+	promise._status = PENDING;
+	promise._resolves = [];
+	promise._rejects = [];
+	
 	var resolve = function(value){
-		transition.apply(that,[FULFILLED].concat([value]));
+		transition.apply(promise,[FULFILLED].concat([value]));
 	}
 	var reject = function(reason){
-		transition.apply(that,[REJECTED].concat([reason]));
+		transition.apply(promise,[REJECTED].concat([reason]));
 	}
 	resolver(resolve,reject);
 }
 
 Promise.prototype.then = function(onFulfilled,onRejected){
-	var that = this;
+	var promise = this;
+	// 每次返回一个promise，保证是可thenable的
 	return Promise(function(resolve,reject){
-		// 被接受时触发的回调(即内部resolve)
-		// 如果onFulfilled返回的是promise，
-		// 等待此promise被resolve或reject，在触发我们then链的下一个promise
-		// 如果返回的是值，则直接触发回调
 		function callback(value){
 	      var ret = isFunction(onFulfilled) && onFulfilled(value) || value;
 	      if(isPromise(ret)){
@@ -78,21 +70,17 @@ Promise.prototype.then = function(onFulfilled,onRejected){
 	        resolve(ret);
 	      }
 	    }
-	    // 被拒绝时触发的回调(即内部reject)
-	    // 并触发下一个promise对象的reject(即每次then返回的新promise)
 	    function errback(reason){
 	    	reason = isFunction(onRejected) && onRejected(reason) || reason;
 	    	reject(reason);
 	    }
-	    // then方法PENDING的时候添加onFulfilled与onRejected的回调
-	    // 在内部resolve和reject的时候调用
-		if(that._status === PENDING){
-       		that._resolves.push(callback);
-       		that._rejects.push(errback);
-       	}else if(that._status === FULFILLED){
-       		callback(that._value);
-       	}else if(that._status === REJECTED){
-       		errback(that._reason);
+		if(promise._status === PENDING){
+       		promise._resolves.push(callback);
+       		promise._rejects.push(errback);
+       	}else if(promise._status === FULFILLED){
+       		callback(promise._value);
+       	}else if(promise._status === REJECTED){
+       		errback(promise._reason);
        	}
 	});
 }

@@ -18,10 +18,10 @@ var transition = function(status,value){
 	// 所以的执行都是异步调用，保证then是先执行的
 	setTimeout(function(){
 		promise._status = status;
-		fireQueue.call(promise,value);
+		publish.call(promise,value);
 	});
 }
-var fireQueue = function(val){
+var publish = function(val){
 	var promise = this,
     	fn,
     	st = promise._status === FULFILLED,
@@ -31,6 +31,7 @@ var fireQueue = function(val){
         val = fn.call(promise, val) || val;
     }
     promise[st ? '_value' : '_reason'] = val;
+    promise['_resolves'] = promise['_rejects'] = undefined;
 }
 
 var Promise = function(resolver){
@@ -87,7 +88,21 @@ Promise.prototype.then = function(onFulfilled,onRejected){
 }
 
 Promise.prototype.catch = function(onRejected){
-	return this.then(undefined, onRejected);
+	return this.then(undefined, onRejected)
+}
+
+Promise.prototype.delay = function(ms){
+	return this.then(function(val){
+		return Promise.delay(ms,val);
+	})
+}
+
+Promise.delay = function(ms,val){
+	return Promise(function(resolve,reject){
+		setTimeout(function(){
+			resolve(val);
+		},ms);
+	})
 }
 
 Promise.resolve = function(arg){

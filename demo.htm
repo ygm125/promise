@@ -5,16 +5,44 @@
 </head>
 <body>
 
+<input id="say" type="input">
+
 <script type="text/javascript" src="promise.js"></script>
 
 <script type="text/javascript">
 
-Promise.resolve('test').then(function(val){
-	console.log(val);
-	return val + val;
-}).then(function(val){
-	console.log(val);
-});
+var words = '你好，你是谁？',
+	len = 0;
+	say = document.getElementById("say");
+
+function count(num,ms,cb){
+	say.focus();
+	var pro = Promise.resolve();
+	for (var i = 0; i < num; i++) {
+		pro = pro.delay(ms).then(function(v){
+			return cb(v);
+		});
+		console.log(pro)
+	};
+}
+
+count(words.length,800,function(){
+	var w = words.substr(0,++len);
+	say.value = w;
+})
+
+
+// Promise.delay(1000).then(function(){
+// 	console.log(1000)
+// })
+
+
+// Promise.resolve('test').then(function(val){
+// 	console.log(val);
+// 	return val + val;
+// }).then(function(val){
+// 	console.log(val);
+// });
 
 var getData100 = function(){
 	return Promise(function(resolve,reject){
@@ -42,19 +70,19 @@ var getData200 = function(){
 // 	console.log(reason)
 // });
 
-getData100().then(function(data){
-	console.log(data);
-	return getData200();
-}).then(function(data){
-	console.log(data);
-	return data + data;
-},function(err){
-	console.log(err);
-}).then(function(data){
-	console.log(data)
-},function(err){
-	console.log(err);
-});
+// getData100().then(function(data){
+// 	console.log(data);
+// 	return getData200();
+// }).then(function(data){
+// 	console.log(data);
+// 	return data + data;
+// },function(err){
+// 	console.log(err);
+// }).then(function(data){
+// 	console.log(data)
+// },function(err){
+// 	console.log(err);
+// });
 
 </script>
 </body>

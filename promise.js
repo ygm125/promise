@@ -91,8 +91,8 @@ Promise.prototype.catch = function(onRejected){
 	return this.then(undefined, onRejected)
 }
 
-Promise.prototype.delay = function(ms){
-	return this.then(function(val){
+Promise.prototype.delay = function(ms,val){
+	return this.then(function(){
 		return Promise.delay(ms,val);
 	})
 }
@@ -124,7 +124,8 @@ Promise.all = function(promises){
   	return Promise(function(resolve,reject){
   		var i = 0,
   			result = [],
-  			len = promises.length;
+  			len = promises.length,
+			count = len
 
   		function resolver(index) {
 	      return function(value) {
@@ -138,8 +139,8 @@ Promise.all = function(promises){
 
 	    function resolveAll(index,value){
 	    	result[index] = value;
-	    	if(index == len - 1){
-	    		resolve(result);
+	    	if( --count == 0){
+	    		resolve(result)
 	    	}
 	    }
 

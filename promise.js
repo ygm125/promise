@@ -92,8 +92,8 @@ Promise.prototype.catch = function(onRejected){
 }
 
 Promise.prototype.delay = function(ms,val){
-	return this.then(function(){
-		return Promise.delay(ms,val);
+	return this.then(function(ori){
+		return Promise.delay(ms,val || ori);
 	})
 }
 

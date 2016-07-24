@@ -40,7 +40,7 @@ for (var i = 0; i < 5; i++) {
 }
 ```
 
-另外补上当时写的实现说明链接 http://www.cnblogs.com/ygm125/p/3735677.html
+另外补上当时写的实现说明链接 https://gmiam.com/post/shi-xian-ge-promise.html
 
 
 

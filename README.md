@@ -3,6 +3,8 @@ promise
 
 es6 promise
 
+如需支持 iOS JavaScriptCore 替换 setTimeout 为 dispatch_after
+
 一个小的 promise 库，仿照 es6 promise api 做了简单实现
 
 - 实例化
